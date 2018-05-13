@@ -5,7 +5,8 @@ module PasswordSetter(
     input  [3:0]  digit,
     output [3:0]  data,
     output [1:0]  address,
-    output        shouldWrite
+    output        shouldWrite,
+    output [2:0]  dbgSetState
   );
 
     typedef enum logic [2:0] {
@@ -13,6 +14,8 @@ module PasswordSetter(
     } SetState;
 
     SetState currentSetState, nextSetState;
+
+    assign dbgSetState = currentSetState;
 
     always_ff @(posedge CLK or negedge RST) begin
         if (!RST) begin
@@ -59,7 +62,7 @@ module PasswordSetter(
                 shouldWrite = 0;
                 nextSetState = S_INIT;
             end
-            
+
         endcase
     end
 

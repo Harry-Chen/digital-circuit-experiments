@@ -8,7 +8,10 @@ module PasswordValidator(
   output [1:0]  address,
   output        errorLight,
   output        unlockLight,
-  output        lockDown
+  output        lockDown,
+  output [3:0]   dbgSuccessState,
+  output [2:0]   dbgErrorState,
+  output         dbgAdminState
 );
 
     typedef enum logic [2:0] {
@@ -26,6 +29,11 @@ module PasswordValidator(
     SuccessState currentSuccessState, nextSuccessState;
     ErrorState currentErrorState, nextErrorState;
     AdminState currentAdminState, nextAdminState;
+
+    assign dbgSuccessState = currentSuccessState;
+    assign dbgErrorState = currentErrorState;
+    assign dbgAdminState = currentAdminState;
+
     logic error;
 
     always_ff @(posedge CLK or negedge RST or posedge resetLockDown) begin

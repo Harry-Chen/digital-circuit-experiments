@@ -5,11 +5,16 @@ module SerialPasswordLock(
   input [3:0]    digit,
   output         unlockLight,
   output         errorLight,
-  output         warningLight
+  output         warningLight,
+  output [2:0]   dbgMainState,
+  output [3:0]   dbgSuccessState,
+  output [2:0]   dbgErrorState,
+  output         dbgAdminState,
+  output [2:0]   dbgSetState
 );
 
     logic RST;
-    assign RST = ~reset;
+    assign RST = reset;
 
     logic lockDown, resetLockDown;
     logic nowLockDown;
@@ -21,6 +26,7 @@ module SerialPasswordLock(
     } LockState;
 
     LockState currentState, nextState;
+    assign dbgMainState = currentState;
 
     logic   [3:0]   digitToSet, digitRead;
     logic   [1:0]   writeAddress, readAddress, address;
@@ -42,7 +48,8 @@ module SerialPasswordLock(
         .digit(digit),
         .data(digitToSet),
         .address(writeAddress),
-        .shouldWrite(shouldWrite)
+        .shouldWrite(shouldWrite),
+        .dbgSetState(dbgSetState)
     );
 
     PasswordValidator validator(
@@ -55,7 +62,10 @@ module SerialPasswordLock(
         .errorLight(errorLight),
         .unlockLight(unlockLight),
         .lockDown(lockDown),
-        .resetLockDown(resetLockDown)
+        .resetLockDown(resetLockDown),
+        .dbgSuccessState(dbgSuccessState),
+        .dbgErrorState(dbgErrorState),
+        .dbgAdminState(dbgAdminState)
     );
 
     always_ff @(posedge CLK or negedge RST) begin
