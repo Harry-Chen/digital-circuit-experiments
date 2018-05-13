@@ -10,7 +10,8 @@ module SerialPasswordLock(
   output [3:0]   dbgSuccessState,
   output [2:0]   dbgErrorState,
   output         dbgAdminState,
-  output [2:0]   dbgSetState
+  output [2:0]   dbgSetState,
+  output [3:0]   dbgReadData
 );
 
     logic RST;
@@ -29,6 +30,7 @@ module SerialPasswordLock(
     assign dbgMainState = currentState;
 
     logic   [3:0]   digitToSet, digitRead;
+    assign dbgReadData = digitRead;
     logic   [1:0]   writeAddress, readAddress, address;
     assign address = setMode ? writeAddress : readAddress;
     logic           shouldWrite;
