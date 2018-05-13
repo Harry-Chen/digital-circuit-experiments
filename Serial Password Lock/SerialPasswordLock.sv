@@ -11,14 +11,15 @@ module SerialPasswordLock(
   output [2:0]   dbgErrorState,
   output         dbgAdminState,
   output [2:0]   dbgSetState,
-  output [3:0]   dbgReadData
+  output [3:0]   dbgReadData,
+  output [3:0]   dbgAddress
 );
 
-    logic RST;
+    wire RST;
     assign RST = reset;
 
-    logic lockDown = 0, resetLockDown = 0;
-    logic nowLockDown;
+    wire lockDown, resetLockDown;
+    wire nowLockDown;
     assign nowLockDown = lockDown & !resetLockDown;
     assign warningLight = lockDown;
 
@@ -29,11 +30,12 @@ module SerialPasswordLock(
     LockState currentState, nextState;
     assign dbgMainState = currentState;
 
-    logic   [3:0]   digitToSet, digitRead;
+    wire   [3:0]   digitToSet, digitRead;
     assign dbgReadData = digitRead;
-    logic   [1:0]   writeAddress, readAddress, address;
+    wire   [1:0]   writeAddress, readAddress, address;
     assign address = setMode ? writeAddress : readAddress;
-    logic           shouldWrite;
+    assign dbgAddress = address;
+    wire           shouldWrite;
 
     PasswordStore store(
         .CLK(CLK),
