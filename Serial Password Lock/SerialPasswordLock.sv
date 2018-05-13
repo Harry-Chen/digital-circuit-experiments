@@ -12,14 +12,18 @@ module SerialPasswordLock(
   output         dbgAdminState,
   output [2:0]   dbgSetState,
   output [3:0]   dbgReadData,
-  output [3:0]   dbgAddress
+  output [3:0]   dbgAddress,
+  output         dbgLockDown,
+  output         dbgResetLockDown
 );
 
     wire RST;
     assign RST = reset;
 
-    wire lockDown, resetLockDown;
-    wire nowLockDown;
+    logic lockDown, resetLockDown;
+    logic nowLockDown;
+	 assign dbgLockDown = lockDown;
+	 assign dbgResetLockDown = resetLockDown;
     assign nowLockDown = lockDown & !resetLockDown;
     assign warningLight = lockDown;
 
@@ -73,16 +77,17 @@ module SerialPasswordLock(
     );
 
     always_ff @(posedge CLK or negedge RST) begin
-        if (!RST) currentState <= S_NORMAL;
+        if (!RST) begin
+				currentState <= lockDown ? S_LOCKED : S_NORMAL;
+		  end
         else currentState <= nextState;
     end
 
     always_comb begin
         unique case (currentState)
-            S_NORMAL: begin
+            default: begin
                 resetLockDown = 0;
-                if (lockDown) nextState = S_LOCKED;
-                else nextState = S_NORMAL;
+                nextState = S_NORMAL;
             end
 
             S_LOCKED: begin
@@ -112,11 +117,6 @@ module SerialPasswordLock(
             S_4: begin
                 resetLockDown = 1;
                 nextState = S_DONE;
-            end
-
-            default: begin
-                resetLockDown = 0;
-                nextState = S_NORMAL;
             end
         endcase
     end

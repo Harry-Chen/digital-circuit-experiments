@@ -37,21 +37,16 @@ module PasswordValidator(
     logic error;
 
     always_ff @(posedge CLK or negedge RST or posedge resetLockDown) begin
-        if (!RST) begin
+        if (!RST | resetLockDown) begin
             currentSuccessState <= enable ? S_0 : currentSuccessState;
             currentAdminState <= enable ? S_FAILURE : currentAdminState;
         end else if (CLK) begin
             currentSuccessState <= enable ? nextSuccessState : currentSuccessState;
             currentAdminState <= enable ? nextAdminState : currentAdminState;
+				currentErrorState <= enable ? nextErrorState : currentErrorState;
         end
-
-        if (resetLockDown) begin
-            currentErrorState <= enable ? S_ERROR_0 : currentErrorState;
-            currentSuccessState <= enable ? S_0 : currentSuccessState;
-            currentAdminState <= enable ? S_FAILURE : currentAdminState;
-        end else if (CLK) begin
-            currentErrorState <= enable ? nextErrorState : currentErrorState;
-        end
+		  
+		  if (resetLockDown) currentErrorState <= enable ? S_ERROR_0 : currentErrorState;
     end
 
     always_comb begin
