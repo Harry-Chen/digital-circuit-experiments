@@ -31,11 +31,11 @@ module SerialPasswordLock(
     } LockState;
 
     LockState currentState, nextState;
-    logic   [3:0]   digitToSet, digitRead;
-    logic   [1:0]   writeAddress, readAddress, address;
+    logic [3:0] digitToSet, digitRead;
+    logic [1:0] writeAddress, readAddress, address;
     assign address = setMode ? writeAddress : readAddress;
 
-    logic           shouldWrite;
+    logic shouldWrite;
 
     // debug purposes
     assign dbgLockDown = lockDown;
@@ -81,7 +81,7 @@ module SerialPasswordLock(
 
     always_ff @(posedge CLK or negedge RST) begin
         if (!RST) begin
-				currentState <= lockDown ? S_LOCKED : S_NORMAL;
+            currentState <= lockDown ? S_LOCKED : S_NORMAL;
 		  end
         else currentState <= nextState;
     end
