@@ -6,7 +6,7 @@ module PasswordSetter(
     output [3:0]  data,
     output [1:0]  address,
     output        shouldWrite,
-    output [2:0]  dbgSetState
+    output [2:0]  dbgSetState // for debug purposes
   );
 
     typedef enum logic [2:0] {

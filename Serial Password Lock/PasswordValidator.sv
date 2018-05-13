@@ -9,9 +9,10 @@ module PasswordValidator(
   output        errorLight,
   output        unlockLight,
   output        lockDown,
-  output [3:0]   dbgSuccessState,
-  output [2:0]   dbgErrorState,
-  output         dbgAdminState
+  // below for debug purposes
+  output [3:0]  dbgSuccessState,
+  output [2:0]  dbgErrorState,
+  output        dbgAdminState
 );
 
     typedef enum logic [2:0] {
@@ -54,31 +55,29 @@ module PasswordValidator(
             S_ERROR_3: lockDown <= 1;
             default: lockDown <= 0;
         endcase
-    end
 
-    always @(*) begin
         unique case (currentSuccessState)
             S_INIT: begin
                 nextSuccessState = S_INIT;
+                nextAdminState = S_SUCCESS;
                 errorLight = error;
                 unlockLight = 0;
                 error = 1;
+                address = 0;
                 nextErrorState = currentErrorState;
             end
             
             S_0: begin
+                error = 0;
                 address = 0;
                 unlockLight = 0;
                 errorLight = 0;
-                error = 0;
-                if (digit == 0) begin
-                    nextSuccessState = S_1;
+                nextAdminState = S_FAILURE;
+                nextErrorState = currentErrorState;
+                nextSuccessState = S_1;
+                if (digit == 0 && currentAdminState == S_SUCCESS) begin
                     nextAdminState = S_SUCCESS;
-                    nextErrorState = currentErrorState;
-                end else if (data == digit) begin
-                    nextSuccessState = S_1;
-                    nextErrorState = currentErrorState;
-                end else begin
+                end else if (data != digit) begin
                     error = 1;
                     nextSuccessState = S_INIT;
                     unique case (currentErrorState)
@@ -91,18 +90,16 @@ module PasswordValidator(
             end
 
             S_1: begin
+                error = 0;
                 address = 1;
                 unlockLight = 0;
                 errorLight = 0;
+                nextAdminState = S_FAILURE;
+                nextErrorState = currentErrorState;
+                nextSuccessState = S_2;
                 if (digit == 1 && currentAdminState == S_SUCCESS) begin
-                    nextSuccessState = S_2;
                     nextAdminState = S_SUCCESS;
-                    nextErrorState = currentErrorState;
-                end else if (data == digit) begin
-                    nextSuccessState = S_2;
-                    nextAdminState = S_FAILURE;
-                    nextErrorState = currentErrorState;
-                end else begin
+                end else if (data != digit) begin
                     error = 1;
                     nextSuccessState = S_INIT;
                     unique case (currentErrorState)
@@ -115,18 +112,16 @@ module PasswordValidator(
             end
 
             S_2: begin
+                error = 0;
                 address = 2;
                 unlockLight = 0;
                 errorLight = 0;
+                nextAdminState = S_FAILURE;
+                nextErrorState = currentErrorState;
+                nextSuccessState = S_3;
                 if (digit == 2 && currentAdminState == S_SUCCESS) begin
-                    nextSuccessState = S_3;
                     nextAdminState = S_SUCCESS;
-                    nextErrorState = currentErrorState;
-                end else if (data == digit) begin
-                    nextSuccessState = S_3;
-                    nextAdminState = S_FAILURE;
-                    nextErrorState = currentErrorState;
-                end else begin
+                end else if (data != digit) begin
                     error = 1;
                     nextSuccessState = S_INIT;
                     unique case (currentErrorState)
@@ -139,16 +134,16 @@ module PasswordValidator(
             end
 
             S_3: begin
+                error = 0;
                 address = 3;
                 unlockLight = 0;
                 errorLight = 0;
+                nextAdminState = S_FAILURE;
+                nextErrorState = currentErrorState;
+                nextSuccessState = S_DONE;
                 if (digit == 9 && currentAdminState == S_SUCCESS) begin
-                    nextSuccessState = S_DONE;
-                    nextErrorState = S_ERROR_0;
-                end else if (data == digit) begin
-                    nextSuccessState = S_DONE;
-                    nextErrorState = S_ERROR_0;
-                end else begin
+                    nextAdminState = S_SUCCESS;
+                end else if (data != digit) begin
                     error = 1;
                     nextSuccessState = S_INIT;
                     unique case (currentErrorState)
@@ -161,9 +156,13 @@ module PasswordValidator(
             end
 
             S_DONE: begin
+                error = 0;
+                address = 0;
                 errorLight = 0;
                 unlockLight = 1;
                 nextSuccessState = S_DONE;
+                nextErrorState = S_ERROR_0;
+                nextAdminState = S_FAILURE;
             end
 
             default: nextSuccessState = S_INIT;
