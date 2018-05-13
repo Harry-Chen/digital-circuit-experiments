@@ -14,8 +14,6 @@ module PasswordStore(
         end
     end
 
-    always_ff begin
-        outputData = memory[address];
-    end
+    assign outputData = memory[address];
 
 endmodule // PasswordStore

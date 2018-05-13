@@ -16,7 +16,7 @@ module SerialPasswordLock(
     logic RST;
     assign RST = reset;
 
-    logic lockDown, resetLockDown;
+    logic lockDown = 0, resetLockDown = 0;
     logic nowLockDown;
     assign nowLockDown = lockDown & !resetLockDown;
     assign warningLight = lockDown;

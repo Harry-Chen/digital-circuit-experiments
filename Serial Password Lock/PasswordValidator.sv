@@ -68,7 +68,7 @@ module PasswordValidator(
                 errorLight = error;
                 unlockLight = 0;
                 error = 1;
-                nextErrorState <= currentErrorState;
+                nextErrorState = currentErrorState;
             end
             
             S_0: begin
