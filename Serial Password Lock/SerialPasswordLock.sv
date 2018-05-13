@@ -76,35 +76,44 @@ module SerialPasswordLock(
     always_comb begin
         unique case (currentState)
             S_NORMAL: begin
+                resetLockDown = 0;
                 if (lockDown) nextState = S_LOCKED;
                 else nextState = S_NORMAL;
             end
 
             S_LOCKED: begin
+                resetLockDown = 0;
                 if (digit==0) nextState = S_1;
-                else nextState <= S_LOCKED;
+                else nextState = S_LOCKED;
             end
 
             S_1: begin
+                resetLockDown = 0;
                 if (digit==1) nextState = S_2;
-                else nextState <= S_LOCKED;
+                else nextState = S_LOCKED;
             end
 
             S_2: begin
+                resetLockDown = 0;
                 if (digit==2) nextState = S_3;
-                else nextState <= S_LOCKED;
+                else nextState = S_LOCKED;
             end
 
             S_3: begin
+                resetLockDown = 0;
                 if (digit==9) nextState = S_4;
-                else nextState <= S_LOCKED;
+                else nextState = S_LOCKED;
             end
 
-            S_4: nextState = S_DONE;
+            S_4: begin
+                resetLockDown = 1;
+                nextState = S_DONE;
+            end
 
-            S_DONE: nextState = S_NORMAL;
-
-            default: nextState = S_NORMAL;
+            default: begin
+                resetLockDown = 0;
+                nextState = S_NORMAL;
+            end
         endcase
     end
 
