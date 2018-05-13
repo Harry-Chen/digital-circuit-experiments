@@ -40,11 +40,11 @@ module PasswordValidator(
     always_ff @(posedge CLK or negedge RST or posedge resetLockDown) begin
         if (!RST | resetLockDown) begin
             currentSuccessState <= enable ? S_0 : currentSuccessState;
-            currentAdminState <= enable ? S_FAILURE : currentAdminState;
+            currentAdminState <= enable ? S_SUCCESS : currentAdminState;
         end else if (CLK) begin
             currentSuccessState <= enable ? nextSuccessState : currentSuccessState;
             currentAdminState <= enable ? nextAdminState : currentAdminState;
-				currentErrorState <= enable ? nextErrorState : currentErrorState;
+            currentErrorState <= enable ? nextErrorState : currentErrorState;
         end
 		  
 		  if (resetLockDown) currentErrorState <= enable ? S_ERROR_0 : currentErrorState;
