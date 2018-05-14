@@ -28,33 +28,18 @@ module PasswordSetter(
     always_comb begin
         unique case (currentSetState)
 
-            S_0: begin
-                shouldWrite = 1;
-                address = 0;
-                data = digit;
-                nextSetState = S_1;
-            end
+            `define SET_STATE(NOW, NEXT_STATE) \
+            S_``NOW: begin \
+                shouldWrite = 1; \
+                address = NOW; \
+                data = digit; \
+                nextSetState = NEXT_STATE; \
+            end \
 
-            S_1: begin
-                shouldWrite = 1;
-                address = 1;
-                data = digit;
-                nextSetState = S_2;
-            end
-
-            S_2: begin
-                shouldWrite = 1;
-                address = 2;
-                data = digit;
-                nextSetState = S_3;
-            end
-
-            S_3: begin
-                shouldWrite = 1;
-                address = 3;
-                data = digit;
-                nextSetState = S_INIT;
-            end
+            `SET_STATE(0, S_1)
+            `SET_STATE(1, S_2)
+            `SET_STATE(2, S_3)
+            `SET_STATE(3, S_INIT)
 
             default: begin
                 address = 0;

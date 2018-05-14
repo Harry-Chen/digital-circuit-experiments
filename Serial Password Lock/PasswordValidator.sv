@@ -72,16 +72,16 @@ module PasswordValidator(
                 nextErrorState = currentErrorState;
             end
 
-            `define VALIDATE_STATE(now, nextState) \
-            S_``now: begin \
+            `define VALIDATE_STATE(NOW, NEXT_STATE) \
+            S_``NOW: begin \
                 error = 0; \
-                address = now; \
+                address = NOW; \
                 unlockLight = 0; \
                 errorLight = 0; \
                 nextAdminState = S_FAILURE; \
                 nextErrorState = currentErrorState; \
-                nextSuccessState = nextState; \
-                if (digit == ADMIN_PASSWORD_``now && currentAdminState == S_SUCCESS) begin \
+                nextSuccessState = NEXT_STATE; \
+                if (digit == ADMIN_PASSWORD_``NOW && currentAdminState == S_SUCCESS) begin \
                     nextAdminState = S_SUCCESS; \
                 end else if (data != digit) begin \
                     error = 1; \

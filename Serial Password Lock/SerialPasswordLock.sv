@@ -109,10 +109,10 @@ module SerialPasswordLock(
                 else nextState = S_LOCKED;
             end
 
-            `define MAIN_STATE(now, next) \
-            S_``now: begin \
+            `define MAIN_STATE(NOW, NEXT) \
+            S_``NOW: begin \
                 resetLockDown = 0; \
-                if (digit == ADMIN_PASSWORD_``now) nextState = S_``next; \
+                if (digit == ADMIN_PASSWORD_``NOW) nextState = S_``NEXT; \
                 else nextState = S_LOCKED; \
             end
 
