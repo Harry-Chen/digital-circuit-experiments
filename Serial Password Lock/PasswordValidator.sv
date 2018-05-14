@@ -100,6 +100,8 @@ module PasswordValidator(
             `VALIDATE_STATE(2, S_3)
             `VALIDATE_STATE(3, S_DONE)
 
+            `undef VALIDATE_STATE
+
             S_DONE: begin
                 error = 0;
                 address = 0;

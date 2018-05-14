@@ -41,6 +41,8 @@ module PasswordSetter(
             `SET_STATE(2, S_3)
             `SET_STATE(3, S_INIT)
 
+            `undef SET_STATE
+
             default: begin
                 address = 0;
                 data = 0;
