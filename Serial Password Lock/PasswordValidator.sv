@@ -15,6 +15,11 @@ module PasswordValidator(
   output        dbgAdminState
 );
 
+    parameter ADMIN_PASSWORD_0 = 0;
+    parameter ADMIN_PASSWORD_1 = 0;
+    parameter ADMIN_PASSWORD_2 = 0;
+    parameter ADMIN_PASSWORD_3 = 0;
+
     typedef enum logic [2:0] {
         S_INIT, S_0, S_1, S_2, S_3, S_DONE
     } SuccessState;
@@ -66,94 +71,34 @@ module PasswordValidator(
                 address = 0;
                 nextErrorState = currentErrorState;
             end
-            
-            S_0: begin
-                error = 0;
-                address = 0;
-                unlockLight = 0;
-                errorLight = 0;
-                nextAdminState = S_FAILURE;
-                nextErrorState = currentErrorState;
-                nextSuccessState = S_1;
-                if (digit == 0 && currentAdminState == S_SUCCESS) begin
-                    nextAdminState = S_SUCCESS;
-                end else if (data != digit) begin
-                    error = 1;
-                    nextSuccessState = S_INIT;
-                    unique case (currentErrorState)
-                        S_ERROR_0: nextErrorState = S_ERROR_1;
-                        S_ERROR_1: nextErrorState = S_ERROR_2;
-                        S_ERROR_2: nextErrorState = S_ERROR_3;
-                        S_ERROR_3: nextErrorState = S_ERROR_3;
-                    endcase
-                end
+
+            `define VALIDATE_STATE(now, nextState) \
+            S_``now: begin \
+                error = 0; \
+                address = now; \
+                unlockLight = 0; \
+                errorLight = 0; \
+                nextAdminState = S_FAILURE; \
+                nextErrorState = currentErrorState; \
+                nextSuccessState = nextState; \
+                if (digit == ADMIN_PASSWORD_``now && currentAdminState == S_SUCCESS) begin \
+                    nextAdminState = S_SUCCESS; \
+                end else if (data != digit) begin \
+                    error = 1; \
+                    nextSuccessState = S_INIT; \
+                    unique case (currentErrorState) \
+                        S_ERROR_0: nextErrorState = S_ERROR_1; \
+                        S_ERROR_1: nextErrorState = S_ERROR_2; \
+                        S_ERROR_2: nextErrorState = S_ERROR_3; \
+                        S_ERROR_3: nextErrorState = S_ERROR_3; \
+                    endcase \
+                end \
             end
 
-            S_1: begin
-                error = 0;
-                address = 1;
-                unlockLight = 0;
-                errorLight = 0;
-                nextAdminState = S_FAILURE;
-                nextErrorState = currentErrorState;
-                nextSuccessState = S_2;
-                if (digit == 1 && currentAdminState == S_SUCCESS) begin
-                    nextAdminState = S_SUCCESS;
-                end else if (data != digit) begin
-                    error = 1;
-                    nextSuccessState = S_INIT;
-                    unique case (currentErrorState)
-                        S_ERROR_0: nextErrorState = S_ERROR_1;
-                        S_ERROR_1: nextErrorState = S_ERROR_2;
-                        S_ERROR_2: nextErrorState = S_ERROR_3;
-                        S_ERROR_3: nextErrorState = S_ERROR_3;
-                    endcase
-                end
-            end
-
-            S_2: begin
-                error = 0;
-                address = 2;
-                unlockLight = 0;
-                errorLight = 0;
-                nextAdminState = S_FAILURE;
-                nextErrorState = currentErrorState;
-                nextSuccessState = S_3;
-                if (digit == 2 && currentAdminState == S_SUCCESS) begin
-                    nextAdminState = S_SUCCESS;
-                end else if (data != digit) begin
-                    error = 1;
-                    nextSuccessState = S_INIT;
-                    unique case (currentErrorState)
-                        S_ERROR_0: nextErrorState = S_ERROR_1;
-                        S_ERROR_1: nextErrorState = S_ERROR_2;
-                        S_ERROR_2: nextErrorState = S_ERROR_3;
-                        S_ERROR_3: nextErrorState = S_ERROR_3;
-                    endcase
-                end
-            end
-
-            S_3: begin
-                error = 0;
-                address = 3;
-                unlockLight = 0;
-                errorLight = 0;
-                nextAdminState = S_FAILURE;
-                nextErrorState = currentErrorState;
-                nextSuccessState = S_DONE;
-                if (digit == 9 && currentAdminState == S_SUCCESS) begin
-                    nextAdminState = S_SUCCESS;
-                end else if (data != digit) begin
-                    error = 1;
-                    nextSuccessState = S_INIT;
-                    unique case (currentErrorState)
-                        S_ERROR_0: nextErrorState = S_ERROR_1;
-                        S_ERROR_1: nextErrorState = S_ERROR_2;
-                        S_ERROR_2: nextErrorState = S_ERROR_3;
-                        S_ERROR_3: nextErrorState = S_ERROR_3;
-                    endcase
-                end
-            end
+            `VALIDATE_STATE(0, S_1)
+            `VALIDATE_STATE(1, S_2)
+            `VALIDATE_STATE(2, S_3)
+            `VALIDATE_STATE(3, S_DONE)
 
             S_DONE: begin
                 error = 0;

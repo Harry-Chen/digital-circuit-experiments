@@ -18,6 +18,11 @@ module SerialPasswordLock(
   output         dbgResetLockDown
 );
 
+    parameter ADMIN_PASSWORD_0 = 0;
+    parameter ADMIN_PASSWORD_1 = 1;
+    parameter ADMIN_PASSWORD_2 = 2;
+    parameter ADMIN_PASSWORD_3 = 9;
+
     wire RST;
     assign RST = reset;
 
@@ -63,7 +68,12 @@ module SerialPasswordLock(
         .dbgSetState(dbgSetState)
     );
 
-    PasswordValidator validator(
+    PasswordValidator #(
+        .ADMIN_PASSWORD_0(ADMIN_PASSWORD_0),
+        .ADMIN_PASSWORD_1(ADMIN_PASSWORD_1),
+        .ADMIN_PASSWORD_2(ADMIN_PASSWORD_2),
+        .ADMIN_PASSWORD_3(ADMIN_PASSWORD_3)
+    ) validator(
         .CLK(CLK),
         .RST(RST),
         .enable(!setMode & !nowLockDown),
@@ -95,27 +105,22 @@ module SerialPasswordLock(
 
             S_LOCKED: begin
                 resetLockDown = 0;
-                if (digit==0) nextState = S_1;
+                if (digit == ADMIN_PASSWORD_0) nextState = S_1;
                 else nextState = S_LOCKED;
             end
 
-            S_1: begin
-                resetLockDown = 0;
-                if (digit==1) nextState = S_2;
-                else nextState = S_LOCKED;
+            `define MAIN_STATE(now, next) \
+            S_``now: begin \
+                resetLockDown = 0; \
+                if (digit == ADMIN_PASSWORD_``now) nextState = S_``next; \
+                else nextState = S_LOCKED; \
             end
 
-            S_2: begin
-                resetLockDown = 0;
-                if (digit==2) nextState = S_3;
-                else nextState = S_LOCKED;
-            end
+            `MAIN_STATE(1, 2)
+            `MAIN_STATE(2, 3)
+            `MAIN_STATE(3, 4)
 
-            S_3: begin
-                resetLockDown = 0;
-                if (digit==9) nextState = S_4;
-                else nextState = S_LOCKED;
-            end
+            `undef MAIN_STATE
 
             S_4: begin
                 resetLockDown = 1;
