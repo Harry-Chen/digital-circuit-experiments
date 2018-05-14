@@ -2,32 +2,36 @@ module PasswordValidator(
   input         CLK,
   input         RST,
   input         enable,
-  input  [3:0]  data,
-  input  [3:0]  digit,
-  input         resetLockDown,
+  input  [3:0]  data, // password read from memory
+  input  [3:0]  digit, // user input
+  input         resetLockDown, // admin password has been used to reset lockdown
   output [1:0]  address,
   output        errorLight,
   output        unlockLight,
   output        lockDown,
   // below for debug purposes
-  output [3:0]  dbgSuccessState,
-  output [2:0]  dbgErrorState,
+  output [2:0]  dbgSuccessState,
+  output [1:0]  dbgErrorState,
   output        dbgAdminState
 );
 
+    // pre-defined admin password, will be overridden in main module
     parameter ADMIN_PASSWORD_0 = 0;
     parameter ADMIN_PASSWORD_1 = 0;
     parameter ADMIN_PASSWORD_2 = 0;
     parameter ADMIN_PASSWORD_3 = 0;
 
+    // states of FSM in checking password mode
     typedef enum logic [2:0] {
         S_INIT, S_0, S_1, S_2, S_3, S_DONE
     } SuccessState;
 
+    // states of error attempts (actually a counter)
     typedef enum logic [1:0] {
         S_ERROR_0, S_ERROR_1, S_ERROR_2, S_ERROR_3
     } ErrorState;
 
+    // states of admin password attempts (actually a boolean)
     typedef enum logic {
         S_SUCCESS, S_FAILURE
     } AdminState;
@@ -36,11 +40,14 @@ module PasswordValidator(
     ErrorState currentErrorState, nextErrorState;
     AdminState currentAdminState, nextAdminState;
 
+    // whether the user has entered a wrong password
+    logic error;
+
+    // for debug purposes
     assign dbgSuccessState = currentSuccessState;
     assign dbgErrorState = currentErrorState;
     assign dbgAdminState = currentAdminState;
 
-    logic error;
 
     always_ff @(posedge CLK or negedge RST or posedge resetLockDown) begin
         if (!RST | resetLockDown) begin
@@ -51,17 +58,20 @@ module PasswordValidator(
             currentAdminState <= enable ? nextAdminState : currentAdminState;
             currentErrorState <= enable ? nextErrorState : currentErrorState;
         end
-		  
-		  if (resetLockDown) currentErrorState <= enable ? S_ERROR_0 : currentErrorState;
+        
+        // disable the lockdown state
+		if (resetLockDown) currentErrorState <= enable ? S_ERROR_0 : currentErrorState;
     end
 
     always_comb begin
+        // trigger lockdown
         unique case (currentErrorState)
             S_ERROR_3: lockDown <= 1;
             default: lockDown <= 0;
         endcase
 
         unique case (currentSuccessState)
+            // initial state, initializing outputs
             S_INIT: begin
                 nextSuccessState = S_INIT;
                 nextAdminState = S_SUCCESS;
@@ -72,6 +82,9 @@ module PasswordValidator(
                 nextErrorState = currentErrorState;
             end
 
+            // S_i for checking the ith digit of the password
+            // check for admin password if and only if previous digits match it
+            // else increase error count and return to initial state
             `define VALIDATE_STATE(NOW, NEXT_STATE) \
             S_``NOW: begin \
                 error = 0; \
@@ -102,6 +115,7 @@ module PasswordValidator(
 
             `undef VALIDATE_STATE
 
+            // state to report success to main module
             S_DONE: begin
                 error = 0;
                 address = 0;

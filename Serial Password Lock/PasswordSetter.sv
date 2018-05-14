@@ -3,12 +3,13 @@ module PasswordSetter(
     input         RST,
     input         enable,
     input  [3:0]  digit,
-    output [3:0]  data,
+    output [3:0]  data, // to memory
     output [1:0]  address,
     output        shouldWrite,
     output [2:0]  dbgSetState // for debug purposes
   );
 
+    // states of FSM in setting mode
     typedef enum logic [2:0] {
         S_INIT, S_0, S_1, S_2, S_3
     } SetState;
@@ -28,6 +29,7 @@ module PasswordSetter(
     always_comb begin
         unique case (currentSetState)
 
+            // S_i for setting the ith digit of password (from 0 to 3)
             `define SET_STATE(NOW, NEXT_STATE) \
             S_``NOW: begin \
                 shouldWrite = 1; \
@@ -43,6 +45,7 @@ module PasswordSetter(
 
             `undef SET_STATE
 
+            // initial state and success state
             default: begin
                 address = 0;
                 data = 0;
